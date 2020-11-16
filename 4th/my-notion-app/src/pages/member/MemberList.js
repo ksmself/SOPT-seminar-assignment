@@ -6,15 +6,29 @@ import Loading from "../../components/loading/Loading";
 
 import { getMembersAPI } from "../../lib/api/memberAPI";
 
-function MemberList({ history, match }) {
-  const [members, setMembers] = useState([]);
-  const [loading, setLoading] = useState(true);
+// redux 사용
+import { setMembersToStore } from "../../modules/member";
+import { useDispatch } from "react-redux";
 
+function MemberList({ history, match }) {
+  // members 데이터 관리
+  const [members, setMembers] = useState([]);
+
+  // 로딩 처리
+  const [isLoad, setIsLoad] = useState(false);
+
+  // action dispatch 정의
+  const dispatch = useDispatch();
+  const saveMembersToStore = (data) => dispatch(setMembersToStore(data));
+
+  // mounted
   useEffect(() => {
     (async () => {
-      const result = await getMembersAPI();
-      setMembers(result);
-      setTimeout(() => setLoading(false), 800);
+      const { data } = await getMembersAPI();
+      setMembers(data); // [{}, {}, ...]
+      setIsLoad(true);
+      // store에 저장
+      saveMembersToStore(data);
     })();
   }, []);
 
@@ -23,7 +37,7 @@ function MemberList({ history, match }) {
     console.log("REMOVE CARD!!");
   };
 
-  switch (loading) {
+  switch (isLoad) {
     case true:
       return <Loading />;
     default:
@@ -40,16 +54,20 @@ function MemberList({ history, match }) {
             <Button text="..." textColor="#777"></Button>
           </div>
           <hr />
-          <div className="member-list-content-wrapper">
-            {members.map((member, i) => (
-              <Card
-                key={"card-" + i}
-                route={{ history, match }}
-                memberData={member}
-                onRemoveCard={removeCard}
-              />
-            ))}
-          </div>
+          {!isLoad ? (
+            <Loading margin="30px" />
+          ) : (
+            <div className="member-list-content-wrapper">
+              {members.map((member, i) => (
+                <Card
+                  key={"card-" + i}
+                  route={{ history, match }}
+                  memberData={member}
+                  onRemoveCard={removeCard}
+                />
+              ))}
+            </div>
+          )}
         </div>
       );
   }
