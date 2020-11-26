@@ -1,6 +1,6 @@
 import "./MemberDetail.scss";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { getMemberAPI } from "../../lib/api/memberAPI";
 
 import Button from "../../components/button/Button";
@@ -35,16 +35,19 @@ function MemberDetail({ match }) {
     })();
   }, []);
 
-  const onChangeInputs = (evt) => {
-    const { name, value } = evt.target;
-    setMemberState({
-      status: "resolved",
-      member: {
-        ...memberState.member,
-        [name]: value,
-      },
-    });
-  };
+  const onChangeInputs = useCallback(
+    (evt) => {
+      const { name, value } = evt.target;
+      setMemberState({
+        status: "resolved",
+        member: {
+          ...memberState.member,
+          [name]: value,
+        },
+      });
+    },
+    [memberState]
+  );
 
   const memberElement = () => (
     <div className="member-detail">
